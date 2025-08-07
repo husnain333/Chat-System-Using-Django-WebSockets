@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+AKISMET_KEY= "6777a7a22a7d"
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django.contrib.sites',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -142,6 +145,7 @@ USE_I18N = True
 USE_TZ = True
 
 
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
@@ -151,3 +155,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Windows-specific Celery settings
+CELERY_WORKER_POOL = 'solo'
+CELERY_WORKER_CONCURRENCY = 1

@@ -7,9 +7,12 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from django.http import JsonResponse
 from rest_framework import status
 from .authentication import CookieJWTAuthentication
+from django import forms
+from django.http import HttpResponseRedirect
+from chat import tasks
+from .models import Comment
 class MessageListAPIView(generics.ListAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -64,6 +67,25 @@ class RefreshTokenV(TokenRefreshView):
         res.set_cookie('access_token', access_token, httponly=True, samesite='Lax')
         return res
 
+
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['name', 'email_address', 'homepage', 'comment']
+
+def add_comment(request, slug, template_name='comments/create.html'):
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save()
+            tasks.spam_filter.delay(comment.id, request.META.get('REMOTE_ADDR'))
+            return HttpResponseRedirect('/')
+    else:
+        form = CommentForm()
+    
+    return render(request, template_name, {'form': form})
 
 
         
