@@ -1,6 +1,6 @@
 __pycache__/
 chat/__pycache__/
+chat/.env
 chatprocess/__pycache__/
 *.pyc
 *.cpython-*
-*.pyo
