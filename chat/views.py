@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics
 from .models import Message
-from .serializers import MessageSerializer
+from .serializers import MessageSerializer, UserSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +13,8 @@ from django import forms
 from django.http import HttpResponseRedirect
 from chat import tasks
 from .models import Comment
+from .models import User
+from .tasks import confirmationEmail
 class MessageListAPIView(generics.ListAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -33,6 +35,18 @@ class AuthenticatedUser(TokenObtainPairView):
         res.set_cookie('refresh_token', refresh_token, httponly=True, samesite='Lax')
         return res
 
+class signUpView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            if User.objects.filter(email=serializer.validated_data['email']).exists():
+                return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            email = serializer.validated_data['email']
+            username = serializer.validated_data['username']
+            confirmationEmail.delay(email, username)
+            return Response({"message": "User created successfully and confirmation email will be sent"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class logoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]

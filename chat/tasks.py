@@ -9,6 +9,37 @@ from akismet import Akismet
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.sites.models import Site
 from .models import Comment
+from django.core.mail import send_mail
+import logging
+from datetime import datetime, timedelta
+logger = logging.getLogger(__name__)
+
+@shared_task
+def taskEveryHour():
+    logger.info("Running taskEveryHour")
+    
+@shared_task
+def weekelySummary():
+    oneWeek = datetime.now() - timedelta(days=7)
+    users = User.objects.filter(is_active=True)
+    for user in users:
+        activity_count = 5
+        send_mail(
+            subject="Your Weekly Summary",
+            message=f"{user.username},\nYou had {activity_count} activities this week.",
+            from_email="no-reply@example.com",
+            recipient_list=[user.email],
+        )
+    return f"Sent weekly summary to {users.count()} users."
+
+@shared_task
+def confirmationEmail(email, username):
+    subject = "Confirmation Email"
+    message = f'Hi {username},\n\nThank you for signing up! \n\nBest regards,\n M Husnain'
+    from_email = chatproject.settings.DEFAULT_FROM_EMAIL
+    recipient_list = [email]
+    send_mail(subject, message, from_email, recipient_list)
+
 
 @shared_task
 def add(x, y):

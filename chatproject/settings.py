@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django.contrib.sites',
+    'django_celery_beat',
 ]
 
 SITE_ID = 1
@@ -144,7 +145,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -163,3 +165,4 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 # Windows-specific Celery settings
 CELERY_WORKER_POOL = 'solo'
 CELERY_WORKER_CONCURRENCY = 1
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
